@@ -36,8 +36,9 @@ def index():
         "<i>/api/v1.0/stations</i><br/>"
         "<i>/api/v1.0/tobs</i><br/>"
         "<i>/api/v1.0/[start_date] (yyyy-mm-dd)</i><br/>"
-        "<i>/api/v1.0/[start_date/end_date] (yyyy-mm-dd)</i><br/>"
+        "<i>/api/v1.0/[start_date]/[end_date] (yyyy-mm-dd)</i><br/>"
     )
+
 
 
 @app.route("/api/v1.0/precipitation")
@@ -66,7 +67,6 @@ def precipitation():
 
 
 
-
 @app.route("/api/v1.0/stations")
 def stations():
     # Create our session to DB
@@ -80,6 +80,7 @@ def stations():
     # Return a JSON list of stations from the dataset.
     stations_data = list(np.ravel(results))
     return jsonify(stations_data)
+
 
 
 @app.route("/api/v1.0/tobs")
@@ -133,12 +134,13 @@ def start(start_date):
     return jsonify(start_date_tobs_data)
 
 
- @app.route("/api/v1.0/<start_date>/<end_date>")
- def start_end(start_date, end_date):
-         # Create our session to DB
+
+@app.route("/api/v1.0/<start_date>/<end_date>")
+def start_end(start_date, end_date):
+    # Create our session to DB
     session = Session(engine)
 
-    # Calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive
+    # Calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date
     results = session.query(func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).filter(measurement.date >= start_date).filter(measurement.date <= end_date).all()
 
     session.close
@@ -157,18 +159,6 @@ def start(start_date):
     return jsonify(start_end_date_tobs_data)
 
 
-
-#   * Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
-
-#   * When given the start only, calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date.
-
-#   * When given the start and the end date, calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive.
-
-# ## Hints
-
-# * You will need to join the station and measurement tables for some of the queries.
-
-# * Use Flask `jsonify` to convert your API data into a valid JSON response object.
 
 if __name__ == "__main__":
     app.run(debug=True)
